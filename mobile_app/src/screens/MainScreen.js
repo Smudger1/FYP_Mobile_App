@@ -1,7 +1,38 @@
 import React, {useState}  from 'react';
 import { StyleSheet, View } from 'react-native';
+import { IndexPath, Layout, Text, Button, Select, SelectItem } from '@ui-kitten/components';
 
-import { Layout, Text, Button } from '@ui-kitten/components';
+import {styles} from '../styles'
+
+const LocationSelector = () => {
+
+    const [selectedIndex, setSelectedIndex] = React.useState(new IndexPath(0));
+
+    const data = [
+        'The One Eyed Dog',
+        'Fat Fox',
+        'The Deco',
+    ];
+
+    const displayValue = data[selectedIndex.row];
+
+    const renderOption = (title) => (
+        <SelectItem title={title}/>
+    );
+
+    return(
+        <Select
+            style={styles.select}
+            size="large"
+            placeholder='Default'
+            value={displayValue}
+            selectedIndex={selectedIndex}
+            onSelect={index => setSelectedIndex(index)}>
+            {data.map(renderOption)}
+        </Select>
+    );
+
+}
 
 const MainScreen = () => {
 
@@ -9,44 +40,36 @@ const MainScreen = () => {
 
     return(
 
-        <Layout style={styles.layout} level="1">
-            <Text>Test</Text>
-        </Layout>
+        <Layout style={styles.container}>
 
-        /*
-        <View>
+            <Layout style={[styles.layout, {justifyContent: 'center'}]} level="2">
+                <>
+                    {isCheckedIn ? (
+                        <View>
+                            <Text style={styles.textStatus}>{isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
 
-            <>
-                {isCheckedIn ? (
-                    <View>
-                        <Text>Currently Checked-In To...</Text>
-                        <Button title="Check-Out" onPress={() => {setCheckedIn(false)}}/>
-                    </View>
-                ) : (
-                    <View>
-                        <Text>Not Currently Checked-In</Text>
-                        <Button title="Check-In" onPress={() => {setCheckedIn(true)}}/>
-                    </View>
-                )}
+                            <LocationSelector/>
+
+                            <Button size='giant' status='warning' onPress={() => {setCheckedIn(false)}}>Check-Out</Button>
+                        </View>
+                    ) : (
+                        <View>
+                            <Text style={styles.textStatus}>Not Currently Checked-In</Text>
+
+                            <LocationSelector/>
+
+                            <Button size='giant' status='info' onPress={() => {setCheckedIn(true)}}>Check-In</Button>
+                        </View>
+                    )}
                 </>
-        </View>
+            </Layout>
 
-         */
+            <Layout style={styles.layout} level="2">
+                <Text>History, results, advice, etc</Text>
+            </Layout>
 
-
+        </Layout>
     );
 }
 
 export default MainScreen;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'row',
-    },
-    layout: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
