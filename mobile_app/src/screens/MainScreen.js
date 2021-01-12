@@ -1,8 +1,13 @@
 import React, {useState}  from 'react';
 import { StyleSheet, View } from 'react-native';
 import { IndexPath, Layout, Text, Button, Select, SelectItem } from '@ui-kitten/components';
+import { Icon } from 'react-native-eva-icons';
 
 import {styles} from '../styles'
+
+const StarIcon = (props) => (
+    <Icon {...props} name='pin-outline' width={24} height={24}/>
+);
 
 const LocationSelector = () => {
 
@@ -26,6 +31,7 @@ const LocationSelector = () => {
             size="large"
             placeholder='Default'
             value={displayValue}
+            accessoryLeft={StarIcon}
             selectedIndex={selectedIndex}
             onSelect={index => setSelectedIndex(index)}>
             {data.map(renderOption)}
