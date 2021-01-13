@@ -23,6 +23,37 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         backgroundColor: '#FFF',
     },
+    directionCards: {
+        backgroundColor: '#FFF',
+
+        borderWidth: 2,
+        borderColor: '#ababab',
+        borderRadius: 7,
+
+        flex:1,
+        flexDirection: 'row',
+
+        marginBottom: 15,
+    },
+    iconBox:{
+        flex:1,
+
+        paddingLeft: 10,
+        paddingRight: 10,
+
+        alignContent: 'center',
+        justifyContent: 'center',
+
+        borderRightWidth: 2,
+        borderColor: '#ababab',
+    },
+    titleBox:{
+        flex:5,
+
+        justifyContent: 'center',
+
+        padding: 10,
+    }
 });
 
 export {styles}
