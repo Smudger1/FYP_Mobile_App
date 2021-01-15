@@ -10,6 +10,23 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
     },
+    containerWNav: {
+        paddingTop: 30,
+        paddingHorizontal: 30,
+
+        backgroundColor: '#fafafa',
+
+        flex: 1,
+        flexDirection: 'column',
+    },
+    navContainer: {
+        marginTop:40,
+
+        backgroundColor: '#fafafa',
+
+        flex: 1,
+        flexDirection: 'column',
+    },
     layout: {
         flex: 1,
         backgroundColor: '#fafafa',
@@ -53,7 +70,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
 
         padding: 10,
-    }
+    },
+    historyCard: {
+        flex: 1,
+        marginBottom: 15,
+    },
+    historyCardPosExposure:{
+        borderColor: 'red',
+        borderWidth: 3,
+    },
+    historyCardTime:{
+        fontWeight: 'bold'
+    },
+    historyCardPosExposureText:{
+        fontWeight: 'bold',
+        color: 'red',
+    },
+
 });
 
 export {styles}
