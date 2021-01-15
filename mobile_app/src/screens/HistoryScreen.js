@@ -22,8 +22,7 @@ const HistoryScreen = ({ navigation }) => {
         navigation.goBack();
     };
 
-
-    const BackAction = (props) => (
+    const BackAction = () => (
         <TopNavigationAction icon={BackIcon} onPress={navigateBack}/>
     );
 
