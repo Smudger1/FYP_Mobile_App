@@ -6,6 +6,8 @@ import { Icon } from 'react-native-eva-icons';
 import {styles} from '../styles'
 import WifiManager from "react-native-wifi-reborn";
 
+import {getBeacons} from '../../util/wifiScanner';
+
 const PinIcon = () => (
     <Icon name='pin-outline' width={24} height={24} fill='#000'/>
 );
@@ -21,30 +23,6 @@ const ClockIcon = () => (
 
 const adviceURL = "https://www.gov.uk/coronavirus";
 
-const requestFineLocationPermission = async () => {
-    try {
-        const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            {
-                title: "Check-In Location Permission",
-                message:
-                    "COVID Check-In needs access to your fine location " +
-                    "so you can check-in to the correct venue.",
-                buttonNegative: "Cancel",
-                buttonPositive: "OK"
-            }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log("You can use the camera");
-            return true;
-        } else {
-            console.log("Camera permission denied");
-            return false;
-        }
-    } catch (err) {
-        console.warn(err);
-    }
-};
 
 const LocationSelector = (props) => {
 
@@ -78,9 +56,8 @@ const LocationSelector = (props) => {
 
 }
 
-const MainScreen = ({navigation}) => {
+const MainScreen = async ({navigation}) => {
 
-    requestFineLocationPermission();
 
     const [wifiList, setWifiList] = useState(/* initialValue */); // you may provide an initial value (optional, defaults to undefined)
 
@@ -90,10 +67,12 @@ const MainScreen = ({navigation}) => {
         setWifiList(data);
     });
 
+    let list = await getBeacons(); // Currently throws {_U, _V, _W, _X} error
+
     // this will log the initialValue 'undefined' the first time,
     // then after state is is updated,
     // it will log the actual wifi list data, resolved by 'WifiManager.reScanAndLoadWifiList()'
-    console.log(wifiList);
+    //console.log(wifiList);
 
 
     const [isCheckedIn, setCheckedIn] = useState(false);
@@ -102,19 +81,22 @@ const MainScreen = ({navigation}) => {
         Linking.openURL(adviceURL).catch(err => console.error("Couldn't load page", err));
     };
 
-    return(
+    return (
 
         <Layout style={styles.container}>
 
-            <Layout style={[styles.layout, {flex: 2,justifyContent: 'center'}]} level="2">
+            <Layout style={[styles.layout, {flex: 2, justifyContent: 'center'}]} level="2">
                 <>
                     {isCheckedIn ? (
                         <View>
-                            <Text style={styles.textStatus}>{isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
+                            <Text
+                                style={styles.textStatus}>{isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
 
                             <LocationSelector disabled="1"/>
 
-                            <Button size='giant' status='warning' onPress={() => {setCheckedIn(false)}}>Check-Out</Button>
+                            <Button size='giant' status='warning' onPress={() => {
+                                setCheckedIn(false)
+                            }}>Check-Out</Button>
                         </View>
                     ) : (
                         <View>
@@ -122,13 +104,15 @@ const MainScreen = ({navigation}) => {
 
                             <LocationSelector/>
 
-                            <Button size='giant' status='info' onPress={() => {setCheckedIn(true)}}>Check-In</Button>
+                            <Button size='giant' status='info' onPress={() => {
+                                setCheckedIn(true)
+                            }}>Check-In</Button>
                         </View>
                     )}
                 </>
             </Layout>
 
-            <Layout style={[styles.layout, {alignContent:'center'}]} level="2">
+            <Layout style={[styles.layout, {alignContent: 'center'}]} level="2">
 
                 <TouchableOpacity style={styles.directionCards} onPress={() => navigation.navigate('History')}>
                     <View style={styles.iconBox}><ClockIcon/></View>
