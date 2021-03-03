@@ -23,113 +23,139 @@ const ClockIcon = () => (
 
 const adviceURL = "https://www.gov.uk/coronavirus";
 
+class LocationSelector extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectedIndex : (new IndexPath(0)),
+            wifiList: null,
+            intervalID: null,
+            count: 0,
+        }
+    }
 
-const LocationSelector = (props) => {
+    componentDidMount() {
+        this.getWifiList();
 
-    const [selectedIndex, setSelectedIndex] = React.useState(new IndexPath(0));
+    }
 
-    const data = [
-        'The One Eyed Dog',
-        'Fat Fox',
-        'The Deco',
-    ];
+    componentWillUnmount() {
+        clearInterval(this.intervalID);
+    }
 
-    const displayValue = data[selectedIndex.row];
 
-    const renderOption = (title) => (
+    getWifiList = async () => {
+
+        WifiManager.setEnabled(true);
+        await WifiManager.reScanAndLoadWifiList()
+            .then((data) => {
+                // update the state here
+                this.state.wifiList = data
+                this.state.count = this.state.count + 1;
+                console.log(this.state.count);
+                this.intervalID = setTimeout( async () => {await this.getWifiList.bind(this)}, 5000);
+                console.log(this.intervalID);
+                console.log(this.state.wifiList)
+            });
+    }
+
+    renderOption = (title) => (
         <SelectItem title={title}/>
-    );
+    )
 
-    return(
-        <Select
-            style={styles.select}
-            size="large"
-            placeholder='Default'
-            value={displayValue}
-            disabled={props.disabled}
-            accessoryLeft={PinIcon}
-            selectedIndex={selectedIndex}
-            onSelect={index => setSelectedIndex(index)}>
-            {data.map(renderOption)}
-        </Select>
-    );
+    render() {
+        console.log(this.state.selectedIndex);
 
+        const data = [
+            'The One Eyed Dog',
+            'Fat Fox',
+            'The Deco',
+        ];
+
+        const displayValue = data[this.state.selectedIndex.row];
+
+        return(
+            <Select
+                style={styles.select}
+                size="large"
+                placeholder='Default'
+                value={displayValue}
+                disabled={this.props.disabled}
+                accessoryLeft={PinIcon}
+                selectedIndex={this.state.selectedIndex}
+                onSelect={(index) => {(this.state.selectedIndex = index); this.forceUpdate()}}>
+                {data.map(this.renderOption)}
+            </Select>
+        );
+    }
 }
 
-const MainScreen = async ({navigation}) => {
+class MainScreen extends React.Component {
+    constructor(props) {
+        super(props);
+        this.navigation = props.navigation
+        this.state = {
+            isCheckedIn: false,
+        }
+    }
 
-
-    const [wifiList, setWifiList] = useState(/* initialValue */); // you may provide an initial value (optional, defaults to undefined)
-
-    WifiManager.setEnabled(true);
-    WifiManager.reScanAndLoadWifiList().then((data) => {
-        // update the state here
-        setWifiList(data);
-    });
-
-    let list = await getBeacons(); // Currently throws {_U, _V, _W, _X} error
-
-    // this will log the initialValue 'undefined' the first time,
-    // then after state is is updated,
-    // it will log the actual wifi list data, resolved by 'WifiManager.reScanAndLoadWifiList()'
-    //console.log(wifiList);
-
-
-    const [isCheckedIn, setCheckedIn] = useState(false);
-
-    const loadInBrowser = () => {
+    loadInBrowser() {
         Linking.openURL(adviceURL).catch(err => console.error("Couldn't load page", err));
     };
 
-    return (
+    render() {
+        return (
 
-        <Layout style={styles.container}>
+            <Layout style={styles.container}>
 
-            <Layout style={[styles.layout, {flex: 2, justifyContent: 'center'}]} level="2">
-                <>
-                    {isCheckedIn ? (
-                        <View>
-                            <Text
-                                style={styles.textStatus}>{isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
+                <Layout style={[styles.layout, {flex: 2, justifyContent: 'center'}]} level="2">
+                    <>
+                        {this.state.isCheckedIn ? (
+                            <View>
+                                <Text
+                                    style={styles.textStatus}>{this.state.isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
 
-                            <LocationSelector disabled="1"/>
+                                <LocationSelector disabled="1"/>
 
-                            <Button size='giant' status='warning' onPress={() => {
-                                setCheckedIn(false)
-                            }}>Check-Out</Button>
-                        </View>
-                    ) : (
-                        <View>
-                            <Text style={styles.textStatus}>Not Currently Checked-In</Text>
+                                <Button size='giant' status='warning' onPress={() => {
+                                    this.state.isCheckedIn = false;
+                                    this.forceUpdate();
+                                }}>Check-Out</Button>
+                            </View>
+                        ) : (
+                            <View>
+                                <Text style={styles.textStatus}>Not Currently Checked-In</Text>
 
-                            <LocationSelector/>
+                                <LocationSelector/>
 
-                            <Button size='giant' status='info' onPress={() => {
-                                setCheckedIn(true)
-                            }}>Check-In</Button>
-                        </View>
-                    )}
-                </>
+                                <Button size='giant' status='info' onPress={() => {
+                                    this.state.isCheckedIn = true;
+                                    this.forceUpdate();
+                                }}>Check-In</Button>
+                            </View>
+                        )}
+                    </>
+                </Layout>
+
+                <Layout style={[styles.layout, {alignContent: 'center'}]} level="2">
+
+                    <TouchableOpacity style={styles.directionCards} onPress={() => this.navigation.navigate('History')}>
+                        <View style={styles.iconBox}><ClockIcon/></View>
+                        <View style={styles.titleBox}><Text category="h4">Check-In History</Text></View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.directionCards} onPress={() => this.navigation.navigate('NewResult')}>
+                        <View style={styles.iconBox}><ClipBoardIcon/></View>
+                        <View style={styles.titleBox}><Text category="h4">Enter Test Result</Text></View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.directionCards} onPress={() => this.loadInBrowser()}>
+                        <View style={styles.iconBox}><InfoIcon/></View>
+                        <View style={styles.titleBox}><Text category="h4">Check Advice</Text></View>
+                    </TouchableOpacity>
+                </Layout>
+
             </Layout>
-
-            <Layout style={[styles.layout, {alignContent: 'center'}]} level="2">
-
-                <TouchableOpacity style={styles.directionCards} onPress={() => navigation.navigate('History')}>
-                    <View style={styles.iconBox}><ClockIcon/></View>
-                    <View style={styles.titleBox}><Text category="h4">Check-In History</Text></View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.directionCards} onPress={() => navigation.navigate('NewResult')}>
-                    <View style={styles.iconBox}><ClipBoardIcon/></View>
-                    <View style={styles.titleBox}><Text category="h4">Enter Test Result</Text></View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.directionCards} onPress={loadInBrowser}>
-                    <View style={styles.iconBox}><InfoIcon/></View>
-                    <View style={styles.titleBox}><Text category="h4">Check Advice</Text></View>
-                </TouchableOpacity>
-            </Layout>
-
-        </Layout>
-    );
+        );
+    }
 }
 
 export default MainScreen;
