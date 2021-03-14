@@ -1,2 +1,4 @@
-# FYP_Check-In_Beacon
+# FYP_Mobile_App
 Final Year Project
+
+Backend server: https://github.com/Smudger1/FYP_Backend
