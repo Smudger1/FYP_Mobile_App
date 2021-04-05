@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
+        marginTop:40,
         paddingHorizontal: 30,
 
         backgroundColor: '#fafafa',
@@ -19,6 +20,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
     },
     navContainer: {
+        marginTop:40,
 
         backgroundColor: '#fafafa',
 
