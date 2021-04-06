@@ -6,7 +6,7 @@ import { Icon } from 'react-native-eva-icons';
 import {styles} from '../styles'
 import WifiManager from "react-native-wifi-reborn";
 
-import {getBeacons} from '../../util/wifiScanner';
+import {WifiUtils} from '../../util/WifiUtils';
 
 const PinIcon = () => (
     <Icon name='pin-outline' width={24} height={24} fill='#000'/>
@@ -34,30 +34,6 @@ class LocationSelector extends React.Component {
         }
     }
 
-    componentDidMount() {
-        this.getWifiList();
-
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.intervalID);
-    }
-
-
-    getWifiList = async () => {
-
-        WifiManager.setEnabled(true);
-        await WifiManager.reScanAndLoadWifiList()
-            .then((data) => {
-                // update the state here
-                this.state.wifiList = data
-                this.state.count = this.state.count + 1;
-                console.log(this.state.count);
-                this.intervalID = setTimeout( async () => {await this.getWifiList.bind(this)}, 5000);
-                console.log(this.intervalID);
-                console.log(this.state.wifiList)
-            });
-    }
 
     renderOption = (title) => (
         <SelectItem title={title}/>
@@ -96,7 +72,35 @@ class MainScreen extends React.Component {
         this.navigation = props.navigation
         this.state = {
             isCheckedIn: false,
+            selectedIndex : (new IndexPath(0)),
+            wifiList: null,
+            intervalID: null,
+            count: 0,
         }
+    }
+
+    componentDidMount() {
+        this.getWifiList();
+
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.intervalID);
+    }
+
+
+    getWifiList = async () => {
+
+        WifiManager.setEnabled(true);
+        await WifiManager.reScanAndLoadWifiList()
+            .then((data) => {
+                this.state.wifiList = data
+                this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 5000);
+                //console.log(data);
+                let wifiUtils = new WifiUtils(data);
+                console.log(wifiUtils.getBeacons());
+
+            });
     }
 
     loadInBrowser() {
