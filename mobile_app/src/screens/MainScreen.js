@@ -28,12 +28,29 @@ class LocationSelector extends React.Component {
         super(props);
         this.state = {
             selectedIndex : (new IndexPath(0)),
-            wifiList: null,
+            venuesList: this.props.venues,
+            //venuesList: [{"BeaconAddr": "DC:A6:32:86:F2:B6", "VenueID": "243a885b-7b91-491d-a300-b499e2cd7847", "VenueName": "One Eyed Dog"}, {"BeaconAddr": "DC:A6:32:86:F2:B2", "VenueID": "143a885b-7b91-491d-a300-b499e2cd7847", "VenueName": "TestVenue"}],
             intervalID: null,
             count: 0,
+            disabled: props.disabled,
         }
     }
 
+    getVenueNameList() {
+
+        let venueNameList = [];
+
+        if (this.state.venuesList) {
+            this.state.venuesList.forEach(function (venue, index) {
+                venueNameList.push(venue.VenueName);
+            });
+        } else{
+            return false;
+        }
+
+        return venueNameList;
+
+    }
 
     renderOption = (title) => (
         <SelectItem title={title}/>
@@ -41,12 +58,27 @@ class LocationSelector extends React.Component {
 
     render() {
         console.log(this.state.selectedIndex);
+        console.log("Hello")
 
+        console.log("LocSel", this.props.disabled)
+
+        /*
         const data = [
             'The One Eyed Dog',
             'Fat Fox',
             'The Deco',
         ];
+        */
+
+        let data = this.getVenueNameList();
+
+        console.log(this.state.venuesList);
+        console.log(data);
+
+        if (!data){
+            this.state.disabled = 1;
+            data = ["None"];
+        }
 
         const displayValue = data[this.state.selectedIndex.row];
 
@@ -74,10 +106,16 @@ class MainScreen extends React.Component {
             isCheckedIn: false,
             selectedIndex : (new IndexPath(0)),
             wifiList: null,
+            venues: null,
             intervalID: null,
             count: 0,
         }
+        this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
     }
+
+    forceUpdateHandler(){
+        this.forceUpdate();
+    };
 
     componentDidMount() {
         this.getWifiList();
@@ -93,13 +131,25 @@ class MainScreen extends React.Component {
 
         WifiManager.setEnabled(true);
         await WifiManager.reScanAndLoadWifiList()
-            .then((data) => {
+            .then( async (data) => {
                 this.state.wifiList = data
                 this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 5000);
                 //console.log(data);
                 let wifiUtils = new WifiUtils(data);
-                console.log(wifiUtils.getBeacons());
-
+                let newVenueList = await wifiUtils.getBeacons();
+                newVenueList = newVenueList.confirmedList;
+                //console.log(newVenueList);
+                //console.log(this.state.venues);
+                newVenueList.sort();
+                if (newVenueList != this.state.venues){
+                    this.state.venues = newVenueList;
+                    this.forceUpdateHandler();
+                } else {
+                    this.state.venues = newVenueList;
+                }
+            })
+            .catch((error) => {
+                console.log("An error occurred: ", error);
             });
     }
 
@@ -108,6 +158,9 @@ class MainScreen extends React.Component {
     };
 
     render() {
+
+        console.log("Main", this.state.venues);
+
         return (
 
             <Layout style={styles.container}>
@@ -119,7 +172,7 @@ class MainScreen extends React.Component {
                                 <Text
                                     style={styles.textStatus}>{this.state.isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
 
-                                <LocationSelector disabled="1"/>
+                                <LocationSelector disabled="1" venues={this.state.venues}/>
 
                                 <Button size='giant' status='warning' onPress={() => {
                                     this.state.isCheckedIn = false;
@@ -130,7 +183,7 @@ class MainScreen extends React.Component {
                             <View>
                                 <Text style={styles.textStatus}>Not Currently Checked-In</Text>
 
-                                <LocationSelector/>
+                                <LocationSelector  venues={this.state.venues}/>
 
                                 <Button size='giant' status='info' onPress={() => {
                                     this.state.isCheckedIn = true;
