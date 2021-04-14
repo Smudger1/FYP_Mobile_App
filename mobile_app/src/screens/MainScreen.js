@@ -59,14 +59,12 @@ class CheckInArea extends React.Component {
             .then( async (data) => {
                 this.state.wifiList = data
                 this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 5000);
-                //console.log(data);
                 let wifiUtils = new WifiUtils(data);
                 let newVenueList = await wifiUtils.getBeacons();
+
                 newVenueList = newVenueList.confirmedList;
-                //console.log(newVenueList);
-                console.log(this.state.venuesList);
                 newVenueList.sort();
-                if (newVenueList != this.state.venuesList){
+                if (newVenueList !== this.state.venuesList){
                     this.state.venuesList = newVenueList;
                     this.forceUpdateHandler();
                 } else {
@@ -79,7 +77,6 @@ class CheckInArea extends React.Component {
     }
 
     getVenueNameList() {
-
         let venueNameList = [];
 
         if (this.state.venuesList) {
@@ -89,9 +86,7 @@ class CheckInArea extends React.Component {
         } else{
             return false;
         }
-
         return venueNameList;
-
     }
 
     renderOption = (title) => (
@@ -100,20 +95,8 @@ class CheckInArea extends React.Component {
 
     render() {
         console.log(this.state.selectedIndex);
-        console.log("Hello")
-
-        /*
-        const data = [
-            'The One Eyed Dog',
-            'Fat Fox',
-            'The Deco',
-        ];
-        */
 
         let data = this.getVenueNameList();
-
-        console.log(this.state.venuesList);
-        console.log("data", data);
 
         if (!data){
             this.state.disabled = 1;
@@ -123,10 +106,9 @@ class CheckInArea extends React.Component {
         const displayValue = data[this.state.selectedIndex.row];
 
         return(
-
             <Layout style={[styles.layout, {flex: 2, justifyContent: 'center'}]} level="2">
                 <>
-                    {this.state.isCheckedIn ? (
+                    {this.state.isCheckedIn ? ( // Is already checked in
                         <View>
                             <Text
                                 style={styles.textStatus}>{this.state.isCheckedIn ? "Currently Checked-In To..." : "Not Currently Checked-In"}</Text>
@@ -148,7 +130,7 @@ class CheckInArea extends React.Component {
                                 this.forceUpdate();
                             }}>Check-Out</Button>
                         </View>
-                    ) : (
+                    ) : ( // Not currently checked in
                         <View>
                             <Text style={styles.textStatus}>Not Currently Checked-In</Text>
 

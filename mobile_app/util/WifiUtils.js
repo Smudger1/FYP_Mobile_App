@@ -18,8 +18,7 @@ export class WifiUtils {
                 if ((hotspot.BSSID).slice(0, 8).toUpperCase() === piMACAddrs[i]) {
                     piHotspots.push(hotspot);
                 }
-            }
-            ;
+            };
         });
 
         if (piHotspots) {
