@@ -25,13 +25,26 @@ export class WifiUtils {
 
             let fetchBody = {'beacons': piHotspots}
 
-            const response = await fetch(`https://kmm29lgrb5.execute-api.us-east-1.amazonaws.com/dev/verify-beacons`, {
+            const response = await fetch(`https://orange-puzzle-jet.glitch.me/graphql`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-API-KEY': 'gKVDCeos6l9ZzgYMjb0F9R1IGXcOoyM66R2aMn79',
                 },
-                body: JSON.stringify(fetchBody),
+                body: JSON.stringify({ query: `
+                    query VerifyBeaconList($id: [ID]!){
+                      verifyBeacons(id: $id){
+                        beaconAddr
+                        venue{
+                            id 
+                            venueName
+                        }
+                      }
+                    }`,
+                    variables: {
+                        "id": piHotspots,
+                    }
+                }),
             });
 
             if (response.ok) {

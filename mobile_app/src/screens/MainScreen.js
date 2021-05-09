@@ -57,8 +57,12 @@ class CheckInArea extends React.Component {
         WifiManager.setEnabled(true);
         await WifiManager.reScanAndLoadWifiList()
             .then( async (data) => {
+
+                console.log(data)
+
                 this.state.wifiList = data
                 this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 5000);
+
                 let wifiUtils = new WifiUtils(data);
                 let newVenueList = await wifiUtils.getBeacons();
 
