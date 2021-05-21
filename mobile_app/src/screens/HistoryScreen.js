@@ -113,14 +113,6 @@ class HistoryScreen extends React.Component {
         <TopNavigationAction icon={BackIcon} onPress={this.navigateBack}/>
     );
 
-    Header(props) {
-        return (
-            <View {...props}>
-                <Text category="h4"><PinIcon/> The One Eyed Dog</Text>
-            </View>
-        );
-    }
-
     render() {
         return (
             <View style={styles.navContainer}>

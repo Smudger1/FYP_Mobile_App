@@ -7,6 +7,7 @@ import {styles} from '../styles'
 import WifiManager from "react-native-wifi-reborn";
 
 import {WifiUtils} from '../../util/WifiUtils';
+import {CheckInUtil} from "../../util/CheckInUtil";
 
 const PinIcon = () => (
     <Icon name='pin-outline' width={24} height={24} fill='#000'/>
@@ -44,6 +45,7 @@ class CheckInArea extends React.Component {
     };
 
     componentDidMount() {
+        this.requestFineLocationPermission();
         this.getWifiList();
 
     }
@@ -52,27 +54,51 @@ class CheckInArea extends React.Component {
         clearInterval(this.intervalID);
     }
 
+    requestFineLocationPermission = async () => {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                {
+                    title: "Check-In Location Permission",
+                    message:
+                        "COVID Check-In needs access to your fine location " +
+                        "so you can check-in to the correct venue.",
+                    buttonNegative: "Cancel",
+                    buttonPositive: "OK"
+                }
+            );
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                console.log("Wifi Scanning Enabled");
+                return true;
+            } else {
+                console.log("Wifi Scanning Denied");
+                return false;
+            }
+        } catch (err) {
+            console.warn(err);
+        }
+    };
+
     getWifiList = async () => {
 
-        WifiManager.setEnabled(true);
-        await WifiManager.reScanAndLoadWifiList()
+        WifiManager.setEnabled(true); // Enables WiFi on device
+        await WifiManager.reScanAndLoadWifiList()// Scans for WiFi points
             .then( async (data) => {
-
-                console.log(data)
-
                 this.state.wifiList = data
-                this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 5000);
+
+                // Time for new scan
+                this.intervalID = setTimeout( async () => {await this.getWifiList().bind(this)}, 30000);
 
                 let wifiUtils = new WifiUtils(data);
-                let newVenueList = await wifiUtils.getBeacons();
+                let newVenueList = await wifiUtils.getBeacons(); // Verifies beacons
 
-                newVenueList = newVenueList.confirmedList;
-                newVenueList.sort();
-                if (newVenueList !== this.state.venuesList){
-                    this.state.venuesList = newVenueList;
-                    this.forceUpdateHandler();
-                } else {
-                    this.state.venuesList = newVenueList;
+                console.log(newVenueList)
+                if (newVenueList !== undefined) {
+                    newVenueList.sort(); // Sorts returned list
+                    if (newVenueList !== this.state.venuesList) { // If different force update and modify list
+                        this.state.venuesList = newVenueList;
+                        this.forceUpdateHandler();
+                    }
                 }
             })
             .catch((error) => {
@@ -83,14 +109,33 @@ class CheckInArea extends React.Component {
     getVenueNameList() {
         let venueNameList = [];
 
-        if (this.state.venuesList) {
+        if (this.state.venuesList != undefined && this.state.venuesList != []) {
+
             this.state.venuesList.forEach(function (venue, index) {
-                venueNameList.push(venue.VenueName);
+                venueNameList.push(venue.venue.venueName);
             });
         } else{
             return false;
         }
         return venueNameList;
+    }
+
+    createCheckIn = async () => {
+        const checkInUtil = new CheckInUtil();
+
+        await checkInUtil.createNewCheckIn("DC:A6:32:86:F2:B4").then(r => console.log(r));
+
+        this.state.isCheckedIn = true;
+        this.forceUpdate();
+    }
+
+    checkOut = async () => {
+        const checkInUtil = new CheckInUtil();
+
+        await checkInUtil.checkOut().then(r => console.log(r));
+
+        this.state.isCheckedIn = false;
+        this.forceUpdate();
     }
 
     renderOption = (title) => (
@@ -101,6 +146,9 @@ class CheckInArea extends React.Component {
         console.log(this.state.selectedIndex);
 
         let data = this.getVenueNameList();
+
+        console.log("state", this.state.venuesList)
+        console.log("data" , data)
 
         if (!data){
             this.state.disabled = 1;
@@ -130,8 +178,7 @@ class CheckInArea extends React.Component {
                             </Select>
 
                             <Button size='giant' status='warning' onPress={() => {
-                                this.state.isCheckedIn = false;
-                                this.forceUpdate();
+                                this.checkOut().then(r => console.log(r));
                             }}>Check-Out</Button>
                         </View>
                     ) : ( // Not currently checked in
@@ -150,8 +197,7 @@ class CheckInArea extends React.Component {
                             </Select>
 
                             <Button size='giant' status='info' onPress={() => {
-                                this.state.isCheckedIn = true;
-                                this.forceUpdate();
+                                this.createCheckIn().then(r => console.log(r));
                             }}>Check-In</Button>
                         </View>
                     )}

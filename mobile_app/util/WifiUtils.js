@@ -5,6 +5,8 @@ export class WifiUtils {
 
     async getBeacons() {
 
+        let confirmedList;
+
         let piMACAddrs = {
             1: 'B8:27:EB',
             2: 'DC:A6:32',
@@ -23,7 +25,7 @@ export class WifiUtils {
 
         if (piHotspots) {
 
-            let fetchBody = {'beacons': piHotspots}
+            let piHotspots = ["DC:A6:32:86:F2:B4"]
 
             const response = await fetch(`https://orange-puzzle-jet.glitch.me/graphql`, {
                 method: 'POST',
@@ -48,12 +50,13 @@ export class WifiUtils {
             });
 
             if (response.ok) {
-                piHotspots = response.json();
+                piHotspots = await response.json();
+                confirmedList = piHotspots.data.verifyBeacons;
             } else {
-                piHotspots = "Error" // TODO
+                confirmedList = [];
             }
         }
 
-        return piHotspots;
+        return confirmedList;
     }
 }

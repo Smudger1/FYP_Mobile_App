@@ -4,7 +4,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo start --web",
-    "eject": "expo eject"
+    "eject": "expo eject",
+    "test": "jest"
   },
   "dependencies": {
     "@apollo/client": "^3.3.15",
@@ -36,7 +37,7 @@
   "devDependencies": {
     "@babel/core": "~7.13.1",
     "babel-jest": "~25.2.6",
-    "jest": "~25.2.6",
+    "jest": "^25.2.7",
     "react-test-renderer": "~16.13.1"
   },
   "private": true,

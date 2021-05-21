@@ -1,4 +1,5 @@
 import DeviceStore from 'react-native-simple-store';
+import makeRequest from "./fetchScript";
 
 export class CheckInUtil{
     constructor() {
@@ -8,27 +9,22 @@ export class CheckInUtil{
 
         console.log(await DeviceStore.get('FYP_DeviceID'))
 
-        const response = await fetch(`https://orange-puzzle-jet.glitch.me/graphql`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query: `
-                    query CheckInHistory($visitor: String!){
-                      checkInsByUser(user: $visitor){
-                        beacon{
-                          venue{
-                            venueName
-                          }
-                        }
-                        dateIn
-                        dateOut
+        const response = await makeRequest({
+            query: `
+                query CheckInHistory($visitor: String!){
+                  checkInsByUser(user: $visitor){
+                    beacon{
+                      venue{
+                        venueName
                       }
-                    }`,
-                variables: {
-                    "visitor": await DeviceStore.get('FYP_DeviceID'),
-                }
-            }),
+                    }
+                    dateIn
+                    dateOut
+                  }
+                }`,
+            variables: {
+                "visitor": await DeviceStore.get('FYP_DeviceID'),
+            }
         });
 
         if (response.ok){
@@ -50,6 +46,11 @@ export class CheckInUtil{
     }
 
     async createNewCheckIn(beacon){
+
+        const deviceID = await DeviceStore.get('FYP_DeviceID');
+
+        console.log("deviceId", deviceID)
+
         const response = await fetch(`https://orange-puzzle-jet.glitch.me/`, {
             method: 'POST',
             headers: {
@@ -65,28 +66,34 @@ export class CheckInUtil{
                     }`,
                 variables: {
                     "beacon": beacon,
-                    "user": this.deviceID,
+                    "user": deviceID,
                 }
             }),
         });
 
         if (response.ok){
-            const res = response.json().data;
+            let res = await response.json();
 
+            res = res.data.createNewCheckIn;
 
             if (res.success){
-                // return success or smt
+                return res.success
             }
             else{
-                // return error
+                return res.success
             }
         }
         else{
-            // return error
+            console.log("not ok")
+            return false
         }
     }
 
-    async checkOut(id){
+    async checkOut(){
+
+        console.log("Checking out ----------")
+
+        const deviceID = await DeviceStore.get('FYP_DeviceID');
         const response = await fetch(`https://orange-puzzle-jet.glitch.me/`, {
             method: 'POST',
             headers: {
@@ -101,23 +108,31 @@ export class CheckInUtil{
                       }
                     }`,
                 variables: {
-                    "id": id,
+                    "id": deviceID,
                 }
             }),
         });
 
+        console.log(response)
+
         if (response.ok){
-            const res = response.json().data;
+            let res = await response.json();
+
+            console.log(res)
+
+            res = res.data.updateCheckOut;
+
+            console.log("res", res)
 
             if (res.success){
-                // return success or smt
+                return res.success
             }
             else{
-                // return error
+                return res.success
             }
         }
         else{
-            // return error
+            return false
         }
     }
 }
